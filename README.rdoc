@@ -38,6 +38,10 @@ Can be done at runtime:
 
     ModelBuilder.build 'Player', options
 
+After all, you can drop tables with:
+
+    ModelBuilder.clean
+
 Simple classes are welcome too:
 
     ModelBuilder::ClassBuilder.build 'Duck', superclass: 'Animal', accessors: %w(age size)
