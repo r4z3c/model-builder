@@ -1,0 +1,47 @@
+= Model Builder
+
+Build active record models on the fly.
+Handy during tests creation, when the development is not related to business intelligence (and should not reference it).
+
+Something like this:
+
+    # migration
+
+    class CreatePlayers < ActiveRecord::Migration
+      def change
+        create_table :players do |t|
+          t.string :name
+          t.integer :age, default: 18
+        end
+      end
+    end
+
+    # model
+
+    class Player < ActiveRecord::Base
+      validates :name, :age, presence: true
+      validates :age, numericality: true
+    end
+
+Can be done at runtime:
+
+    options = {
+      attributes: {
+        name: :string,
+        age: { type: :integer, default: 18 }
+      },
+      validates: [
+        [:name, :age, presence: true],
+        [:age, numericality: true]
+      ]
+    }
+
+    ModelBuilder.build 'Player', options
+
+Simple classes are welcome too:
+
+    ModelBuilder::ClassBuilder.build 'Duck', superclass: 'Animal', accessors: %w(age size)
+
+If you want your object to quack like active record, see this:
+
+* https://github.com/makandra/active_type
