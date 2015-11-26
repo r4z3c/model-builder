@@ -17,7 +17,7 @@ Gem::Specification.new do |s|
   s.require_paths = %w(lib)
 
   s.add_dependency 'bundler'
-  s.add_dependency 'activerecord', '4.2.4'
+  s.add_dependency 'activerecord', '~>4'
 
   s.add_development_dependency 'sqlite3'
   s.add_development_dependency 'rspec'
