@@ -8,15 +8,14 @@ describe ModelBuilder::ClassBuilder do
   let(:constant) { Object.const_get name }
 
   before { @build_result = builder.build name, options }
+
   after { ModelBuilder::ClassBuilder.clean }
 
   describe '.build' do
 
     subject { @build_result }
 
-    it do
-      is_expected.to eq constant
-    end
+    it { is_expected.to eq constant }
     it { expect(builder.list).to include constant }
 
     context 'accessors validations' do
@@ -43,6 +42,7 @@ describe ModelBuilder::ClassBuilder do
 
       before { builder.clean }
       it { expect{constant}.to raise_error(NameError, "uninitialized constant #{name}") }
+      it { expect(builder.list.empty?).to be true }
 
     end
 

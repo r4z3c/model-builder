@@ -25,10 +25,6 @@ module ModelBuilder
       superclass.is_a?(String) ? superclass.constantize : superclass
     end
 
-    def self.list
-      @@dynamic_classes
-    end
-
     def self.add_class(klass)
       @@dynamic_classes << klass
     end
@@ -46,6 +42,10 @@ module ModelBuilder
     def self.clean
       list.map {|c| Object.send :remove_const, c.to_s }
       @@dynamic_classes = []
+    end
+
+    def self.list
+      @@dynamic_classes
     end
 
   end
