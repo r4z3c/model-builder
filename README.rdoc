@@ -46,6 +46,6 @@ Simple classes are welcome too:
 
     ModelBuilder::ClassBuilder.build 'Duck', superclass: 'Animal', accessors: %w(age size)
 
-If you want your object to quack like active record, see this:
+If you just want to see your object quacking like active record, see this:
 
 * https://github.com/makandra/active_type
