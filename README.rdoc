@@ -1,51 +1,46 @@
 = Model Builder
 
 Build active record models on the fly.
-Handy during tests creation, when the development is not related to business intelligence (and should not reference it).
 
-Something like this:
+Handy when using TDD to develop a reusable component, that is not strictly related to the business intelligence of a project (and should not reference it).
 
-    # migration
+== Scenario
 
-    class CreatePlayers < ActiveRecord::Migration
-      def change
-        create_table :players do |t|
-          t.string :name
-          t.integer :age, default: 18
+Consider this case of duplicated code:
+
+    class User < ActiveRecord::Base
+        def map_all_names
+            to_a.map &:name
         end
-      end
     end
 
-    # model
-
-    class Player < ActiveRecord::Base
-      validates :name, :age, presence: true
-      validates :age, numericality: true
+    class Topic < ActiveRecord::Base
+        def map_all_names
+            to_a.map &:name
+        end
     end
 
-Can be done at runtime:
+We can easily improve this through an abstraction:
 
-    options = {
-      attributes: {
-        name: :string,
-        age: { type: :integer, default: 18 }
-      },
-      validates: [
-        [:name, :age, presence: true],
-        [:age, numericality: true]
-      ]
-    }
+    class User < ActiveRecord::Base
+        include NameUtils
+    end
 
-    ModelBuilder.build 'Player', options
+    class Topic < ActiveRecord::Base
+        include NameUtils
+    end
 
-After all, you can drop tables with:
+    module NameUtils
+        def map_all_names
+            to_a.map &:name
+        end
+    end
 
-    ModelBuilder.clean
+Nice. Now we have a reusable abstraction, that could even fit in a gem to be applied at another projects.
 
-Simple classes are welcome too:
+But thinking about the gem context, we will not count on user or topic models.
+They belong to our business intelligence. So, how to test it?
 
-    ModelBuilder::ClassBuilder.build 'Duck', superclass: 'Animal', accessors: %w(age size)
+Here comes the necessity of don't rely on our business intelligence at abstractions tests.
 
-If you just want to see your object quacking like active record, see this:
-
-* https://github.com/makandra/active_type
+== Solution
