@@ -4,7 +4,7 @@ module ModelBuilder
     @@dynamic_classes ||= []
 
     def self.build(name, opts={})
-      return name.constantize if Object.const_defined? name
+      return Object.const_get name if Object.const_defined? name
 
       klass = get_class_from_options opts
       Object.const_set name, klass
@@ -41,6 +41,11 @@ module ModelBuilder
 
     def self.create_accessor(klass, accessor)
       klass.send 'attr_accessor', accessor unless accessor.nil?
+    end
+
+    def self.clean
+      list.map {|c| Object.send :remove_const, c.to_s }
+      @@dynamic_classes = []
     end
 
   end

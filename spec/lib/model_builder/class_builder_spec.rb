@@ -5,24 +5,46 @@ describe ModelBuilder::ClassBuilder do
   let(:builder) { ModelBuilder::ClassBuilder }
   let(:name) { 'ClassBuilderTest' }
   let(:options) { { superclass: Array, accessors: %w(a1 a2) } }
-  let(:constant) { name.constantize }
+  let(:constant) { Object.const_get name }
 
-  subject { builder.build name, options }
+  before { @build_result = builder.build name, options }
+  after { ModelBuilder::ClassBuilder.clean }
 
-  it { is_expected.to eq constant }
-  it { expect(builder.list).to include constant }
+  describe '.build' do
 
-  context 'accessors validations' do
+    subject { @build_result }
 
-    before { subject }
+    it do
+      is_expected.to eq constant
+    end
+    it { expect(builder.list).to include constant }
 
-    it { expect(constant.new).to respond_to :a1 }
-    it { expect(constant.new).to respond_to :a2 }
-    it { expect(constant.new).to_not respond_to :a3 }
+    context 'accessors validations' do
 
-    it { expect(constant.new).to respond_to :a1= }
-    it { expect(constant.new).to respond_to :a2= }
-    it { expect(constant.new).to_not respond_to :a3= }
+      before { subject }
+
+      it { expect(constant.new).to respond_to :a1 }
+      it { expect(constant.new).to respond_to :a2 }
+      it { expect(constant.new).to_not respond_to :a3 }
+
+      it { expect(constant.new).to respond_to :a1= }
+      it { expect(constant.new).to respond_to :a2= }
+      it { expect(constant.new).to_not respond_to :a3= }
+
+    end
+
+  end
+
+  describe '.clean' do
+
+    it { expect{constant}.to_not raise_error }
+
+    context 'after build' do
+
+      before { builder.clean }
+      it { expect{constant}.to raise_error(NameError, "uninitialized constant #{name}") }
+
+    end
 
   end
 
