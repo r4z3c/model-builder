@@ -62,6 +62,8 @@ module ModelBuilder
 
   def self.clean
     list.map {|c| drop_table c }
+    @@dynamic_models = []
+    ClassBuilder.clean
   end
 
   def self.list

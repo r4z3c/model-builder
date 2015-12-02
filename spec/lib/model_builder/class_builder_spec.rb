@@ -1,28 +1,60 @@
 require 'spec_helper'
+require 'support/dummy_module'
 
 describe ModelBuilder::ClassBuilder do
 
   let(:builder) { ModelBuilder::ClassBuilder }
   let(:name) { 'ClassBuilderTest' }
-  let(:options) { { superclass: Array, accessors: %w(a1 a2) } }
-  let(:constant) { name.constantize }
+  let(:options) { { superclass: Array, includes: [Spec::Support::DummyModule], accessors: %w(a1 a2) } }
+  let(:constant) { Object.const_get name }
 
-  subject { builder.build name, options }
+  before { @build_result = builder.build name, options }
 
-  it { is_expected.to eq constant }
-  it { expect(builder.list).to include constant }
+  after { ModelBuilder::ClassBuilder.clean }
 
-  context 'accessors validations' do
+  describe '.build' do
 
-    before { subject }
+    subject { @build_result }
 
-    it { expect(constant.new).to respond_to :a1 }
-    it { expect(constant.new).to respond_to :a2 }
-    it { expect(constant.new).to_not respond_to :a3 }
+    it { is_expected.to eq constant }
+    it { expect(builder.list).to include constant }
 
-    it { expect(constant.new).to respond_to :a1= }
-    it { expect(constant.new).to respond_to :a2= }
-    it { expect(constant.new).to_not respond_to :a3= }
+    context 'includes validations' do
+
+      before { subject }
+
+      it { expect(constant.new).to respond_to :dummy_method }
+
+    end
+
+    context 'accessors validations' do
+
+      before { subject }
+
+      it { expect(constant.new).to respond_to :a1 }
+      it { expect(constant.new).to respond_to :a2 }
+      it { expect(constant.new).to_not respond_to :a3 }
+
+      it { expect(constant.new).to respond_to :a1= }
+      it { expect(constant.new).to respond_to :a2= }
+      it { expect(constant.new).to_not respond_to :a3= }
+
+    end
+
+  end
+
+  describe '.clean' do
+
+    it { expect{constant}.to_not raise_error }
+
+    context 'after build' do
+
+      before { builder.clean }
+
+      it { expect{constant}.to raise_error(NameError, "uninitialized constant #{name}") }
+      it { expect(builder.list.empty?).to be true }
+
+    end
 
   end
 

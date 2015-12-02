@@ -1,51 +1,60 @@
 = Model Builder
 
 Build active record models on the fly.
-Handy during tests creation, when the development is not related to business intelligence (and should not reference it).
 
-Something like this:
+Handy when using TDD to develop a reusable component, that is not strictly related to the business intelligence of a project (and should not reference it).
 
-    # migration
+== Scenario
 
-    class CreatePlayers < ActiveRecord::Migration
-      def change
-        create_table :players do |t|
-          t.string :name
-          t.integer :age, default: 18
+Consider this case of code duplication:
+
+    class User < ActiveRecord::Base
+      def map_all_names
+        to_a.map &:name
+      end
+    end
+
+    class Topic < ActiveRecord::Base
+      def map_all_names
+        to_a.map &:name
+      end
+    end
+
+We can easily improve this through an abstraction:
+
+    class User < ActiveRecord::Base
+      include NameUtils
+    end
+
+    class Topic < ActiveRecord::Base
+      include NameUtils
+    end
+
+    module NameUtils extend ActiveSupport::Concern
+      included do
+        define_singleton_method :map_all_names do
+          all.map &:name
         end
       end
     end
 
-    # model
+Nice. Now we have a reusable abstraction, that could even fit in a gem to be applied at another projects.
 
-    class Player < ActiveRecord::Base
-      validates :name, :age, presence: true
-      validates :age, numericality: true
-    end
+But thinking about the gem context, we will not be able to use user or topic models at our tests.
+They belong to our business intelligence. So, how to test it?
 
-Can be done at runtime:
+Here comes the necessity of don't rely on our business intelligence at abstractions tests.
 
-    options = {
-      attributes: {
-        name: :string,
-        age: { type: :integer, default: 18 }
-      },
-      validates: [
-        [:name, :age, presence: true],
-        [:age, numericality: true]
-      ]
+== Solution
+
+    ModelBuilder.build 'MappableName', {
+      includes: NameUtils,
+      attributes: { name: :string },
+      validates: [:name, presence: true]
     }
 
-    ModelBuilder.build 'Player', options
+Now your 'MappableName' model is able to receive NameUtils tests:
 
-After all, you can drop tables with:
+    MappableName.map_all_names
 
-    ModelBuilder.clean
-
-Simple classes are welcome too:
-
-    ModelBuilder::ClassBuilder.build 'Duck', superclass: 'Animal', accessors: %w(age size)
-
-If you want your object to quack like active record, see this:
-
-* https://github.com/makandra/active_type
+See the full test example here[https://github.com/r4z3c/model-builder/blob/master/spec/examples/name_utils_spec.rb].

@@ -1,5 +1,6 @@
 require 'spec_helper'
 require 'support/database_connection'
+require 'support/dummy_module'
 
 Spec::Support::DatabaseConnection.establish_sqlite_connection
 
@@ -11,6 +12,7 @@ describe ModelBuilder do
   let(:default_age) { 17 }
   let(:options) do
     {
+      includes: [Spec::Support::DummyModule],
       attributes: {
         name: :string,
         age: {
@@ -25,44 +27,70 @@ describe ModelBuilder do
     }
   end
 
-  subject { builder.build name, options }
+  before { @build_result = builder.build name, options }
 
-  it { is_expected.to eq constant }
-  it { expect(builder.list).to include constant }
+  after { ModelBuilder.clean }
 
-  context 'options validations' do
+  describe '.build' do
 
-    before { subject }
+    subject { @build_result }
 
-    subject(:instance) { constant.new }
+    it { is_expected.to eq constant }
+    it { expect(builder.list).to include constant }
 
-    context 'attributes validations' do
+    context 'options validations' do
 
-      it { is_expected.to respond_to :name }
-      it { is_expected.to respond_to :age }
+      before { subject }
 
-      it { is_expected.to respond_to :name= }
-      it { is_expected.to respond_to :age= }
+      subject(:instance) { constant.new }
 
-      it { expect(instance.age).to eq default_age }
+      context 'includes validations' do
 
-    end
+        it { expect(instance).to respond_to :dummy_method }
 
-    context 'validations validations' do
-
-      before do
-        instance.age = 'noop'
-        instance.valid?
       end
 
-      it { expect(instance.valid?).to be false }
-      it { expect(instance.errors.messages.keys).to include :name }
-      it { expect(instance.errors.messages.keys).to include :age }
+      context 'attributes validations' do
+
+        it { is_expected.to respond_to :name }
+        it { is_expected.to respond_to :age }
+
+        it { is_expected.to respond_to :name= }
+        it { is_expected.to respond_to :age= }
+
+        it { expect(instance.age).to eq default_age }
+
+      end
+
+      context 'validations validations' do
+
+        before do
+          instance.age = 'noop'
+          instance.valid?
+        end
+
+        it { expect(instance.valid?).to be false }
+        it { expect(instance.errors.messages.keys).to include :name }
+        it { expect(instance.errors.messages.keys).to include :age }
+
+      end
 
     end
 
   end
 
-  after(:all) { ModelBuilder.clean }
+  describe '.clean' do
+
+    it { expect(constant.all.count).to eq 0 }
+
+    context 'after build' do
+
+      before { builder.clean }
+      it { expect{constant}.to raise_error(NameError, "uninitialized constant #{name}") }
+      it { expect(builder.list.empty?).to be true }
+
+    end
+
+  end
 
 end
