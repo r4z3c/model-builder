@@ -1,10 +1,11 @@
 require 'spec_helper'
+require 'support/dummy_module'
 
 describe ModelBuilder::ClassBuilder do
 
   let(:builder) { ModelBuilder::ClassBuilder }
   let(:name) { 'ClassBuilderTest' }
-  let(:options) { { superclass: Array, accessors: %w(a1 a2) } }
+  let(:options) { { superclass: Array, includes: [Spec::Support::DummyModule], accessors: %w(a1 a2) } }
   let(:constant) { Object.const_get name }
 
   before { @build_result = builder.build name, options }
@@ -17,6 +18,14 @@ describe ModelBuilder::ClassBuilder do
 
     it { is_expected.to eq constant }
     it { expect(builder.list).to include constant }
+
+    context 'includes validations' do
+
+      before { subject }
+
+      it { expect(constant.new).to respond_to :dummy_method }
+
+    end
 
     context 'accessors validations' do
 
@@ -41,6 +50,7 @@ describe ModelBuilder::ClassBuilder do
     context 'after build' do
 
       before { builder.clean }
+
       it { expect{constant}.to raise_error(NameError, "uninitialized constant #{name}") }
       it { expect(builder.list.empty?).to be true }
 

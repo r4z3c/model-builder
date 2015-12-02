@@ -1,5 +1,6 @@
 require 'spec_helper'
 require 'support/database_connection'
+require 'support/dummy_module'
 
 Spec::Support::DatabaseConnection.establish_sqlite_connection
 
@@ -11,6 +12,7 @@ describe ModelBuilder do
   let(:default_age) { 17 }
   let(:options) do
     {
+      includes: [Spec::Support::DummyModule],
       attributes: {
         name: :string,
         age: {
@@ -41,6 +43,12 @@ describe ModelBuilder do
       before { subject }
 
       subject(:instance) { constant.new }
+
+      context 'includes validations' do
+
+        it { expect(instance).to respond_to :dummy_method }
+
+      end
 
       context 'attributes validations' do
 

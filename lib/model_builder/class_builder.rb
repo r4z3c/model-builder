@@ -10,6 +10,7 @@ module ModelBuilder
       Object.const_set name, klass
 
       add_class klass
+      include_modules klass, opts[:includes]
       create_accessors klass, opts[:accessors]
 
       klass
@@ -27,6 +28,15 @@ module ModelBuilder
 
     def self.add_class(klass)
       @@dynamic_classes << klass
+    end
+
+    def self.include_modules(klass, modules)
+      return if modules.nil?
+      modules = [modules] unless modules.is_a? Array
+      modules.each do |m|
+        m_const = m.kind_of?(String) ? Object.const_get(m) : m
+        klass.send :include, m_const
+      end
     end
 
     def self.create_accessors(klass, accessors=[])
