@@ -5,8 +5,12 @@ describe ModelBuilder::ClassBuilder do
 
   let(:builder) { ModelBuilder::ClassBuilder }
   let(:name) { 'ClassBuilderTest' }
-  let(:options) { { superclass: Array, includes: [Spec::Support::DummyModule], accessors: %w(a1 a2) } }
   let(:constant) { Object.const_get name }
+  let(:options) {{
+    superclass: Array,
+    includes: [Spec::Support::DummyModule],
+    accessors: %w(a1 a2)
+  }}
 
   before { @build_result = builder.build name, options }
 
@@ -17,7 +21,18 @@ describe ModelBuilder::ClassBuilder do
     subject { @build_result }
 
     it { is_expected.to eq constant }
-    it { expect(builder.list).to include constant }
+    it { expect(builder.dynamic_classes.values).to include constant }
+
+    context 'module validations' do
+      let(:options) {{
+        module: ModelBuilder,
+        superclass: Array,
+        includes: [Spec::Support::DummyModule],
+        accessors: %w(a1 a2)
+      }}
+
+      it { is_expected.to eq ModelBuilder.const_get(name) }
+    end
 
     context 'includes validations' do
 
@@ -52,7 +67,7 @@ describe ModelBuilder::ClassBuilder do
       before { builder.clean }
 
       it { expect{constant}.to raise_error(NameError, "uninitialized constant #{name}") }
-      it { expect(builder.list.empty?).to be true }
+      it { expect(builder.dynamic_classes.empty?).to be true }
 
     end
 
