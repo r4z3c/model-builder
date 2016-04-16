@@ -1,15 +1,17 @@
 module ModelBuilder
   module ClassBuilder
 
-    @@dynamic_classes ||= []
+    @@dynamic_classes ||= {}
 
     def self.build(name, opts={})
       return Object.const_get name if Object.const_defined? name
 
       klass = get_class_from_options opts
-      Object.const_set name, klass
+      mod = get_module_from_options opts
 
-      add_class klass
+      mod.const_set name, klass
+
+      add_class mod, klass
       include_modules klass, opts[:includes]
       create_accessors klass, opts[:accessors]
 
@@ -26,8 +28,12 @@ module ModelBuilder
       superclass.is_a?(String) ? superclass.constantize : superclass
     end
 
-    def self.add_class(klass)
-      @@dynamic_classes << klass
+    def self.get_module_from_options(opts)
+      opts[:module] || Object
+    end
+
+    def self.add_class(mod, klass)
+      @@dynamic_classes[mod] = klass
     end
 
     def self.include_modules(klass, modules)
@@ -50,11 +56,11 @@ module ModelBuilder
     end
 
     def self.clean
-      list.map {|c| Object.send :remove_const, c.to_s }
-      @@dynamic_classes = []
+      dynamic_classes.each_pair { |mod, klass| mod.send :remove_const, klass.to_s.gsub(/^.*::/, '') }
+      @@dynamic_classes = {}
     end
 
-    def self.list
+    def self.dynamic_classes
       @@dynamic_classes
     end
 

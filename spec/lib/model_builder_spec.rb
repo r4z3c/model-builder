@@ -36,7 +36,7 @@ describe ModelBuilder do
     subject { @build_result }
 
     it { is_expected.to eq constant }
-    it { expect(builder.list).to include constant }
+    it { expect(builder.dynamic_models).to include constant }
 
     context 'options validations' do
 
@@ -87,7 +87,7 @@ describe ModelBuilder do
 
       before { builder.clean }
       it { expect{constant}.to raise_error(NameError, "uninitialized constant #{name}") }
-      it { expect(builder.list.empty?).to be true }
+      it { expect(builder.dynamic_models.empty?).to be true }
 
     end
 
