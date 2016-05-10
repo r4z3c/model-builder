@@ -3,19 +3,36 @@ module ModelBuilder
 
     @@dynamic_classes ||= {}
 
-    def self.build(name, opts={})
-      return Object.const_get name if Object.const_defined? name
+    def self.build(class_full_name, opts={})
+      namespace = namespace_from_class_full_name class_full_name
+      class_name = class_name_from_class_full_name class_full_name
+      return namespace.const_get class_name if namespace.const_defined? class_name
 
       klass = get_class_from_options opts
-      mod = get_module_from_options opts
+      namespace.const_set class_name, klass
 
-      mod.const_set name, klass
-
-      add_class mod, klass
+      add_class namespace, klass
       include_modules klass, opts[:includes]
       create_accessors klass, opts[:accessors]
 
       klass
+    end
+
+    def self.namespace_from_class_full_name(class_full_name)
+      namespace_name = class_namespace_name(class_full_name)
+      namespace_name.blank? ? Object : const_get(namespace_name)
+    end
+
+    def self.class_namespace_name(class_full_name)
+      class_full_name_parts(class_full_name)[0...-1].join '::'
+    end
+
+    def self.class_full_name_parts(class_full_name)
+      class_full_name.split('::')
+    end
+
+    def self.class_name_from_class_full_name(class_full_name)
+      class_full_name_parts(class_full_name).last
     end
 
     def self.get_class_from_options(opts)
@@ -26,10 +43,6 @@ module ModelBuilder
     def self.get_superclass_from_options(opts)
       superclass = opts[:superclass]
       superclass.is_a?(String) ? superclass.constantize : superclass
-    end
-
-    def self.get_module_from_options(opts)
-      opts[:module] || Object
     end
 
     def self.add_class(mod, klass)

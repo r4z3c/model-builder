@@ -24,12 +24,7 @@ describe ModelBuilder::ClassBuilder do
     it { expect(builder.dynamic_classes.values).to include constant }
 
     context 'module validations' do
-      let(:options) {{
-        module: ModelBuilder,
-        superclass: Array,
-        includes: [Spec::Support::DummyModule],
-        accessors: %w(a1 a2)
-      }}
+      let(:name) { 'ModelBuilder::ClassBuilderTest' }
 
       it { is_expected.to eq ModelBuilder.const_get(name) }
     end

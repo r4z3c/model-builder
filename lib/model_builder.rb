@@ -4,14 +4,14 @@ module ModelBuilder
 
   @@dynamic_models ||= []
 
-  def self.build(name, opts={})
+  def self.build(class_full_name, opts={})
     opts.reverse_merge! get_default_options
 
-    already_exists = Object.const_defined? name
-    klass = ClassBuilder.build name, opts
+    already_exists = Object.const_defined? class_full_name
+    klass = ClassBuilder.build class_full_name, opts
 
     unless already_exists
-      create_table klass, opts
+      create_table class_full_name, opts
       define_validations klass, opts[:validates]
     end
 
@@ -25,16 +25,12 @@ module ModelBuilder
     }
   end
 
-  def self.create_table(klass, opts)
-    ActiveRecord::Migration.create_table(table_name_for(klass)) do |migration|
+  def self.create_table(class_full_name, opts)
+    ActiveRecord::Migration.create_table(class_full_name.tableize) do |migration|
       create_attributes(migration, opts[:attributes])
     end
 
-    @@dynamic_models << klass
-  end
-
-  def self.table_name_for(klass)
-    klass.to_s.tableize
+    @@dynamic_models << class_full_name
   end
 
   def self.create_attributes(migration, attributes={})
@@ -70,8 +66,8 @@ module ModelBuilder
     @@dynamic_models
   end
 
-  def self.drop_table(klass)
-    ActiveRecord::Migration.drop_table(table_name_for(klass))
+  def self.drop_table(class_full_name)
+    ActiveRecord::Migration.drop_table(class_full_name.tableize)
   end
 
 end
