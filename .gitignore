@@ -3,6 +3,7 @@
 *.sqlite3
 log/*
 tmp/*
+rdoc/*
 *~
 *.lock
 *.DS_Store

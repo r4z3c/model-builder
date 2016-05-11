@@ -36,7 +36,13 @@ describe ModelBuilder do
     subject { @build_result }
 
     it { is_expected.to eq constant }
-    it { expect(builder.dynamic_models).to include constant }
+    it { expect(builder.dynamic_models).to include name }
+
+    context 'module validations' do
+      let(:name) { 'ModelBuilder::TestModel' }
+
+      it { is_expected.to eq ModelBuilder.const_get(name) }
+    end
 
     context 'options validations' do
 
