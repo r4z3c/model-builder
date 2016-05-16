@@ -7,10 +7,9 @@ module ModelBuilder
   def self.build(class_full_name, opts={})
     opts.reverse_merge! get_default_options
 
-    already_exists = Object.const_defined? class_full_name
     klass = ClassBuilder.build class_full_name, opts
 
-    unless already_exists
+    unless table_already_exists class_full_name
       create_table class_full_name, opts
       define_validations klass, opts[:validates]
     end
@@ -25,8 +24,16 @@ module ModelBuilder
     }
   end
 
+  def self.table_already_exists(class_full_name)
+    ActiveRecord::Base.connection.tables.include? table_name_for(class_full_name)
+  end
+
+  def self.table_name_for(class_full_name)
+    class_full_name.tableize.gsub(/\//,'_')
+  end
+
   def self.create_table(class_full_name, opts)
-    ActiveRecord::Migration.create_table(class_full_name.tableize) do |migration|
+    ActiveRecord::Migration.create_table(table_name_for(class_full_name)) do |migration|
       create_attributes(migration, opts[:attributes])
     end
 
@@ -59,7 +66,6 @@ module ModelBuilder
   def self.clean
     dynamic_models.map {|c| drop_table c }
     @@dynamic_models = []
-    ClassBuilder.clean
   end
 
   def self.dynamic_models
@@ -67,7 +73,7 @@ module ModelBuilder
   end
 
   def self.drop_table(class_full_name)
-    ActiveRecord::Migration.drop_table(class_full_name.tableize)
+    ActiveRecord::Migration.drop_table(table_name_for(class_full_name))
   end
 
 end

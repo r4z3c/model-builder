@@ -29,7 +29,7 @@ describe ModelBuilder do
 
   before { @build_result = builder.build name, options }
 
-  after { ModelBuilder.clean }
+  after(:all) { ModelBuilder.clean }
 
   describe '.build' do
 
@@ -88,14 +88,6 @@ describe ModelBuilder do
   describe '.clean' do
 
     it { expect(constant.all.count).to eq 0 }
-
-    context 'after build' do
-
-      before { builder.clean }
-      it { expect{constant}.to raise_error(NameError, "uninitialized constant #{name}") }
-      it { expect(builder.dynamic_models.empty?).to be true }
-
-    end
 
   end
 

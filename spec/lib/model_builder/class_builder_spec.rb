@@ -14,7 +14,7 @@ describe ModelBuilder::ClassBuilder do
 
   before { @build_result = builder.build name, options }
 
-  after { ModelBuilder::ClassBuilder.clean }
+  after(:all) { ModelBuilder::ClassBuilder.clean }
 
   describe '.build' do
 
