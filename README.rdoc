@@ -61,6 +61,11 @@ See full test examples here[https://github.com/r4z3c/model-builder/blob/master/s
 
 == Changelog
 
+=== 2.2.0
+
+- Bug fixes and improvements for creating/dropping tables
+- Bug fixes and improvements for cleaning strategy: now you should call 'clean' methods in 'before :all' instead of 'before :each'
+
 === 2.1.0
 
 - Improving support to namespaced classes/models. Now the builder accepts:
