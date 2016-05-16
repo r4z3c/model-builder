@@ -69,7 +69,11 @@ module ModelBuilder
     end
 
     def self.clean
-      dynamic_classes.each_pair { |mod, klass| mod.send :remove_const, klass.to_s.gsub(/^.*::/, '') }
+      dynamic_classes.each_pair do |mod, klass|
+        class_name = klass.to_s.gsub(/^.*::/, '')
+        return if !Object.const_defined?(mod.to_s) or !mod.const_defined?(class_name)
+        mod.send :remove_const, class_name
+      end
       @@dynamic_classes = {}
     end
 
