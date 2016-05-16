@@ -18,7 +18,7 @@ describe NameUtils do
     populate_mappable_names_table
   end
 
-  after { ModelBuilder.clean }
+  after(:all) { ModelBuilder.clean }
 
   subject { MappableName.map_all_names }
 
