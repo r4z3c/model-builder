@@ -2,7 +2,7 @@
 
 Build active record models on the fly.
 
-Handy when following TDD to develop a reusable component, that isn't strictly related to a project business intelligence (therefore should not reference it).
+Handy when following TDD to develop a reusable component, that isn't strictly related to a project business layer (therefore should not reference it).
 
 == Scenario
 
@@ -57,14 +57,37 @@ Now your 'MappableName' model is able to receive NameUtils tests:
 
     MappableName.map_all_names
 
+And, in order to clean database:
+
+    # Add this to your spec_helper.rb or rails_helper.rb
+
+    RSpec.configure do |config|
+      config.after(:suite) do
+        ModelBuilder.clean
+      end
+    end
+
 See full test examples here[https://github.com/r4z3c/model-builder/blob/master/spec/examples/name_utils_spec.rb] and here[https://github.com/r4z3c/model-builder/blob/master/spec/lib/model_builder_spec.rb].
 
 == Changelog
 
+=== 2.2.1
+
+- Bug fixes and improvements for creating/dropping tables
+- Bug fixes and improvements for cleaning strategy: now you have to call 'clean' method at 'after :suite' instead of 'before :all'
+
+    # Add this to your spec_helper.rb or rails_helper.rb
+
+    RSpec.configure do |config|
+      config.after(:suite) do
+        ModelBuilder.clean
+      end
+    end
+
 === 2.2.0
 
 - Bug fixes and improvements for creating/dropping tables
-- Bug fixes and improvements for cleaning strategy: now you should call 'clean' methods in 'before :all' instead of 'before :each'
+- Bug fixes and improvements for cleaning strategy: now you have to 'clean' method at 'before :all' instead of 'before :each'
 
 === 2.1.0
 

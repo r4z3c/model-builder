@@ -2,8 +2,6 @@ require 'spec_helper'
 require 'support/database_connection'
 require 'support/dummy_module'
 
-Spec::Support::DatabaseConnection.establish_sqlite_connection
-
 describe ModelBuilder do
 
   let(:builder) { ModelBuilder }
@@ -28,8 +26,6 @@ describe ModelBuilder do
   end
 
   before { @build_result = builder.build name, options }
-
-  after(:all) { ModelBuilder.clean }
 
   describe '.build' do
 

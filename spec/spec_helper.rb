@@ -1,6 +1,15 @@
 require 'active_record'
 require 'simplecov'
+require 'support/database_connection'
 
 SimpleCov.start
 
-require(File.expand_path '.','lib/model_builder')
+require 'model_builder'
+
+Spec::Support::DatabaseConnection.establish_sqlite_connection
+
+RSpec.configure do |config|
+  config.after(:suite) do
+    ModelBuilder.clean
+  end
+end

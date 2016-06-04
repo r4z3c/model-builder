@@ -2,6 +2,8 @@ Dir["#{File.dirname(__FILE__)}/**/*.rb"].each {|file| require file }
 
 module ModelBuilder
 
+  TABLE_PREFIX = "model_builder/"
+
   @@dynamic_models ||= []
 
   def self.build(class_full_name, opts={})
@@ -11,6 +13,7 @@ module ModelBuilder
 
     unless table_already_exists class_full_name
       create_table class_full_name, opts
+      define_table_name klass, class_full_name
       define_validations klass, opts[:validates]
     end
 
@@ -25,11 +28,24 @@ module ModelBuilder
   end
 
   def self.table_already_exists(class_full_name)
-    ActiveRecord::Base.connection.tables.include? table_name_for(class_full_name)
+    relevant_database_tables.include? table_name_for(class_full_name)
+  end
+
+  def self.relevant_database_tables
+    database_tables.select {|table| table.starts_with? TABLE_PREFIX }
+  end
+
+  def self.database_tables
+    database_connection.tables
+  end
+
+  def self.database_connection
+    ActiveRecord::Base.connection
   end
 
   def self.table_name_for(class_full_name)
-    class_full_name.tableize.gsub(/\//,'_')
+    table_name = class_full_name.tableize.gsub(/\//,'_')
+    "#{TABLE_PREFIX}#{table_name}"
   end
 
   def self.create_table(class_full_name, opts)
@@ -57,6 +73,10 @@ module ModelBuilder
     migration.send(type, key, opts)
   end
 
+  def self.define_table_name(klass, class_full_name)
+    klass.table_name = table_name_for(class_full_name)
+  end
+
   def self.define_validations(klass, validations)
     return if validations.nil? or !validations.kind_of?(Array) or validations.empty?
     validations = [validations] unless validations.first.kind_of? Array
@@ -64,7 +84,7 @@ module ModelBuilder
   end
 
   def self.clean
-    dynamic_models.map {|c| drop_table c }
+    relevant_database_tables.map {|table| drop_table table }
     @@dynamic_models = []
   end
 
@@ -72,8 +92,8 @@ module ModelBuilder
     @@dynamic_models
   end
 
-  def self.drop_table(class_full_name)
-    ActiveRecord::Migration.drop_table(table_name_for(class_full_name))
+  def self.drop_table(table)
+    ActiveRecord::Migration.drop_table(table)
   end
 
 end
