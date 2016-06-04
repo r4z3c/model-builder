@@ -69,6 +69,10 @@ And, in order to clean database:
 
 See full test examples here[https://github.com/r4z3c/model-builder/blob/master/spec/examples/name_utils_spec.rb] and here[https://github.com/r4z3c/model-builder/blob/master/spec/lib/model_builder_spec.rb].
 
+==
+
+{<img src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif" alt="Donate" />}[https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=4AQ5ERDJBUBKG]
+
 == Changelog
 
 === 2.2.1
